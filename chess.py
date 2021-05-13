@@ -79,7 +79,6 @@ class ChessAPI():
             df['pct'] = df/df.sum()
             return df 
         
-
         month = group(opp_df,
                       [pd.Index(opp_df['date']).year,
                        pd.Index(opp_df['date']).month,
