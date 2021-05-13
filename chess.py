@@ -3,10 +3,9 @@ import pandas as pd
 import datetime as dt
 from dateutil.relativedelta import *
 
-
 class ChessAPI():
-    def __init__(self,usrname):
-        self.user = usrname
+    def __init__(self,username):
+        self.user = username
         
         self.start = dt.date.today().replace(day=1,month=1)
         self.today = dt.date.today()
@@ -14,12 +13,21 @@ class ChessAPI():
         self.base_url = 'https://api.chess.com/pub/player'
         
     def game_archive(self,date):
-         return self.__pull(f"{self.base_url}/{self.user}/games/{date.year}/{date.strftime('%m')}")
+        '''
+        this calls the game_archive url
+        '''
+        return self.__pull(f"{self.base_url}/{self.user}/games/{date.year}/{date.strftime('%m')}")
          
     def __pull(self,url):
+        '''
+        requests library to pull the json 
+        '''
         return r.get(url).json()
     
     def _get_result(self,results,color):
+        '''
+        returns the result of the match and the detail behind it
+        '''
         res_string = results[color]['result']
         if res_string in ['checkmated','resigned','timeout','lose']:
             return 'loss' , res_string
@@ -33,7 +41,14 @@ class ChessAPI():
             return res_string,None
         
     def _which_color(self,api_obj):
+        '''
+        sets the values for the df
         
+        looks in the api json response to determine the following columns
+        
+        color, opp (name), your result, your detailed result, current rating,
+        opp current rating, the date the game concluded
+        '''
         if api_obj['white']['username'] == self.user:
             color = 'white'
             result,result_detail = self._get_result(api_obj,'white')
@@ -57,6 +72,9 @@ class ChessAPI():
                      'date':dt.datetime.fromtimestamp(api_obj['end_time']).date()}
         
     def archive_grab(self):
+        '''
+        pulls the current year worth of data
+        '''
         self.data = []
         start = self.start
         while start.month != self.today.month+1:
@@ -70,6 +88,10 @@ class ChessAPI():
         self.df['date'] = pd.to_datetime(self.df['date'])
         
     def opp(self,opp_name):
+        '''
+        returns grouped data (date,result,result detail) between you and 
+        a specific player
+        '''
         opp_df = self.df.loc[self.df['opp'] == opp_name].copy()
         
         def group(df,cols):
