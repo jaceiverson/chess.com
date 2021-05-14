@@ -11,6 +11,8 @@ class ChessAPI():
         self.today = dt.date.today()
         
         self.base_url = 'https://api.chess.com/pub/player'
+
+        self.opps = {}
         
     def game_archive(self,date):
         '''
@@ -40,7 +42,7 @@ class ChessAPI():
         else:
             return res_string,None
         
-    def _which_color(self,api_obj):
+    def _extract_data(self,api_obj):
         '''
         sets the values for the df
         
@@ -65,11 +67,14 @@ class ChessAPI():
                 
         return {'color': color,
                 'opp': opp,
-                     'result': result,
-                     'result detail': result_detail,
-                     'current rating':rating,
-                     'opp current rating': opp_rating,
-                     'date':dt.datetime.fromtimestamp(api_obj['end_time']).date()}
+                'result': result,
+                'result detail': result_detail,
+                'current rating':rating,
+                'opp current rating': opp_rating,
+                'game-mode': api_obj['time_class'] + '-' + api_obj['time_control'],
+                'rated':api_obj['rated'],
+                'url':api_obj['url'],
+                'date':dt.datetime.fromtimestamp(api_obj['end_time']).date()}
         
     def archive_grab(self):
         '''
@@ -83,7 +88,7 @@ class ChessAPI():
         
         self.df = pd.DataFrame()
         for x in self.data:
-            self.df = self.df.append(pd.DataFrame.from_records([self._which_color(x)]))
+            self.df = self.df.append(pd.DataFrame.from_records([self._extract_data(x)]))
             
         self.df['date'] = pd.to_datetime(self.df['date'])
         
@@ -105,12 +110,25 @@ class ChessAPI():
                       [pd.Index(opp_df['date']).year,
                        pd.Index(opp_df['date']).month,
                        'result','result detail'])
-        
+
+        month_simple = month.groupby(
+                        [month.index.get_level_values(0),
+                        month.index.get_level_values(1),
+                        month.index.get_level_values(2)]
+                        ).sum()['results']
+
         detail = month.groupby([month.index.get_level_values(2),
                                 month.index.get_level_values(3)]
                                ).sum()
         
         results = detail.groupby(detail.index.get_level_values(0)
                                  ).sum()
-        
-        return opp_df, detail, results, month
+
+        self.opps[opp_name] = {'raw':opp_df,
+                               'detail':detail,
+                               'results':results,
+                               'month':month,
+                               'month-s':month_simple
+                               }
+
+        return opp_df, detail, results, month, month_simple
