@@ -10,6 +10,7 @@ class ChessAPI():
 
         self.opps = {}
 
+
     def all_archives(self):
         return self.__pull(f"https://api.chess.com/pub/player/{self.user}/games/archives")
 
@@ -32,7 +33,7 @@ class ChessAPI():
         res_string = results[color]['result']
         if res_string in ['checkmated','resigned','timeout','lose']:
             return 'loss' , res_string
-        elif res_string in ['agreed','repetition']:
+        elif res_string in ['agreed','repetition','50move']:
             return 'draw',res_string
         elif res_string == 'stalemate':
             return res_string,res_string
