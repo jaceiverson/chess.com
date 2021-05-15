@@ -1,24 +1,24 @@
 import requests as r
 import pandas as pd
 import datetime as dt
-from dateutil.relativedelta import *
 
 class ChessAPI():
     def __init__(self,username):
         self.user = username
         
-        self.start = dt.date.today().replace(day=1,month=1)
-        self.today = dt.date.today()
-        
         self.base_url = 'https://api.chess.com/pub/player'
 
         self.opps = {}
 
-    def game_archive(self,date):
+
+    def all_archives(self):
+        return self.__pull(f"https://api.chess.com/pub/player/{self.user}/games/archives")
+
+    def game_archive(self,archive_url):
         '''
         this calls the game_archive url
         '''
-        return self.__pull(f"{self.base_url}/{self.user}/games/{date.year}/{date.strftime('%m')}")
+        return self.__pull(archive_url)
          
     def __pull(self,url):
         '''
@@ -78,13 +78,11 @@ class ChessAPI():
         
     def archive_grab(self):
         '''
-        pulls the current year worth of data
+        pulls all the data found in all archive pages
         '''
         self.data = []
-        start = self.start
-        while start.month != self.today.month+1:
-            self.data += self.game_archive(start.replace(day=1))['games']
-            start = start + relativedelta(months=+1)
+        for page in self.all_archives():
+            self.data += self.game_archive(page)['games']
         
         self.df = pd.DataFrame()
         for x in self.data:
