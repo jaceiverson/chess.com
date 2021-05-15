@@ -13,7 +13,7 @@ class ChessAPI():
         self.base_url = 'https://api.chess.com/pub/player'
 
         self.opps = {}
-        
+
     def game_archive(self,date):
         '''
         this calls the game_archive url
