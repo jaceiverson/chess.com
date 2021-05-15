@@ -33,7 +33,7 @@ class ChessAPI():
         res_string = results[color]['result']
         if res_string in ['checkmated','resigned','timeout','lose']:
             return 'loss' , res_string
-        elif res_string in ['agreed','repetition']:
+        elif res_string in ['agreed','repetition','50move']:
             return 'draw',res_string
         elif res_string == 'stalemate':
             return res_string,res_string
