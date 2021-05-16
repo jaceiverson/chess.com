@@ -81,7 +81,7 @@ class ChessAPI():
         pulls all the data found in all archive pages
         '''
         self.data = []
-        for page in self.all_archives():
+        for page in self.all_archives()['archives']:
             self.data += self.game_archive(page)['games']
         
         self.df = pd.DataFrame()
