@@ -19,7 +19,10 @@ class ChessAPI():
         this calls the game_archive url
         '''
         return self.__pull(archive_url)
-         
+
+    def set_opp(self,opp_name):
+        self.opp = opp_name
+        
     def __pull(self,url):
         '''
         requests library to pull the json 
@@ -90,13 +93,16 @@ class ChessAPI():
             
         self.df['date'] = pd.to_datetime(self.df['date'])
         
-    def opp(self,opp_name):
+    def matchup_stats(self):
         '''
         returns grouped data (date,result,result detail) between you and 
         a specific player
         '''
-        opp_df = self.df.loc[self.df['opp'] == opp_name].copy()
-        
+        try:
+            opp_df = self.df.loc[self.df['opp'] == self.opp].copy()
+        except AttributeError:
+            raise AttributeError('Please declare opponent name using self.set_opp')
+
         def group(df,cols):
             df = df.groupby(cols).count()[df.columns[0]]
             df.name = 'results'
@@ -122,7 +128,7 @@ class ChessAPI():
         results = detail.groupby(detail.index.get_level_values(0)
                                  ).sum()
 
-        self.opps[opp_name] = {'raw':opp_df,
+        self.opps[self.opp] = {'raw':opp_df,
                                'detail':detail,
                                'results':results,
                                'month':month,
