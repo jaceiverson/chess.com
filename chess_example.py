@@ -7,7 +7,7 @@ import datetime as dt
 c = ChessAPI("jaceiverson")
 
 # declare you opponant
-c.set_opp("EldrickLover")
+c.set_opp("bkoss326")
 
 # find the matchup stats
 df, d, r, m, ms = c.matchup_stats()
